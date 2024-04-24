@@ -39,6 +39,7 @@
     "webpack-dev-server": "^4.15.2"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3"
   }
 }
