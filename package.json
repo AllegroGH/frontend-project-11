@@ -1,14 +1,22 @@
 {
   "name": "@hexlet/code",
   "version": "1.0.0",
-  "description": "",
+  "description": "educational project",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Alex Makovka",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AllegroGH/frontend-project-11.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AllegroGH/frontend-project-11/issues"
+  },
+  "homepage": "https://github.com/AllegroGH/frontend-project-11#readme",
   "devDependencies": {
     "@babel/core": "^7.20.12",
     "@babel/eslint-parser": "^7.19.1",
@@ -40,6 +48,8 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.3"
+    "bootstrap": "^5.3.3",
+    "on-change": "^5.0.1",
+    "yup": "^1.4.0"
   }
 }

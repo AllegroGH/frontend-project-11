@@ -1,5 +1,6 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import './styles.scss';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import 'bootstrap';
+import app from './app.js';
 
-console.log(1);
+app();
