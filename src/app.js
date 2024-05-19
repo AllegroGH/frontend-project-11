@@ -1,7 +1,8 @@
-import onChange from 'on-change';
+// import onChange from 'on-change';
 import * as yup from 'yup';
-
-const schema = yup.string().trim().url().required();
+import i18next from 'i18next';
+import watch from './view.js';
+import resources from './locales/index.js';
 
 export default () => {
   const elements = {
@@ -9,7 +10,19 @@ export default () => {
     urlInput: document.querySelector('#url-input'),
     submit: document.querySelector('[type="submit"]'),
     feedback: document.querySelector('.feedback'),
+    posts: document.querySelector('.posts'),
     feeds: document.querySelector('.feeds'),
+    textNodes: {
+      main: {
+        header: document.querySelector('h1[class="display-3 mb-0"]'),
+        subheader: document.querySelector('p[class="lead"]'),
+        form: {
+          inputLabel: document.querySelector('label[for="url-input"]'),
+          btn: document.querySelector('button[class="h-100 btn btn-lg btn-primary px-sm-5"]'),
+        },
+        linkExample: document.querySelector('p[class="mt-2 mb-0 text-muted"]'),
+      },
+    },
   };
 
   const state = {
@@ -23,41 +36,55 @@ export default () => {
     },
   };
 
-  const watchedState = onChange(state, (path, value) => {
-    switch (path) {
-      case 'rssForm.errors':
-        if (value.length) {
-          elements.urlInput.classList.add('is-invalid');
-          const [feedbackText] = value;
-          elements.feedback.textContent = feedbackText;
-          elements.feedback.classList.remove('text-success');
-          elements.feedback.classList.add('text-danger');
-        } else {
-          elements.urlInput.classList.remove('is-invalid');
-          const feedbackText = 'RSS успешно загружен';
-          elements.feedback.textContent = feedbackText;
-          elements.feedback.classList.add('text-success');
-          elements.feedback.classList.remove('text-danger');
-          elements.rssForm.reset();
-          elements.urlInput.focus();
-        }
-        break;
-      default:
-        console.log(`unwatchable path: ${path}`);
-    }
+  const defaultLng = 'ru';
+  const i18n = i18next.createInstance();
+  i18n.init({
+    lng: defaultLng,
+    debug: false,
+    resources,
   });
+
+  // LOAD LOCALE
+  elements.textNodes.main.header.textContent = i18n.t('main.header');
+  elements.textNodes.main.subheader.textContent = i18n.t('main.subheader');
+  elements.textNodes.main.form.inputLabel.textContent = i18n.t('main.form.inputLabel');
+  elements.textNodes.main.form.btn.textContent = i18n.t('main.form.btn');
+  elements.textNodes.main.linkExample.textContent = i18n.t('main.linkExample');
+
+  yup.setLocale({
+    string: {
+      url: () => ({ key: 'errors.invalid' }),
+    },
+    mixed: {
+      notOneOf: () => ({ key: 'errors.alreadyExists' }),
+    },
+  });
+  const schema = yup.string().url();
+
+  const watchedState = watch(elements, state, i18n);
 
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const input = formData.get('url');
     schema
-      .validate(input)
+      .validate(input, { abortEarly: false })
       .then(() => {
         watchedState.rssForm.errors = [];
       })
       .catch((err) => {
-        watchedState.rssForm.errors = err.errors;
+        const messages = err.errors.map((error) => i18n.t(error.key));
+        watchedState.rssForm.errors = messages;
       });
+  });
+
+  elements.urlInput.addEventListener('invalid', (e) => {
+    if (e.target.value.length === 0) {
+      e.target.setCustomValidity(i18n.t('errors.required'));
+    }
+  });
+
+  elements.urlInput.addEventListener('input', (e) => {
+    e.target.setCustomValidity('');
   });
 };
