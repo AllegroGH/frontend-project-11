@@ -4,7 +4,8 @@ export default {
       required: 'Please fill out this field.',
       invalid: 'Must be valid URL',
       alreadyExists: 'RSS already exists',
-      noData: 'The resource does not contain valid RSS',
+      noRssData: 'No valid RSS in the resource',
+      networkError: 'Loading error: check your network connection',
     },
 
     main: {
@@ -15,7 +16,8 @@ export default {
         btn: 'Add',
       },
       linkExample: 'An example: https://lorem-rss.hexlet.app/feed',
-      successfulFeedback: 'RSS uploaded successfully',
+      sendingFeedback: 'Data is loading...',
+      loadedFeedback: 'RSS has been loaded',
     },
 
     posts: {

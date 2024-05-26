@@ -4,7 +4,8 @@ export default {
       required: 'Заполните это поле.',
       invalid: 'Ссылка должна быть валидным URL',
       alreadyExists: 'RSS уже существует',
-      noData: 'Ресурс не содержит валидный RSS',
+      noRssData: 'Ресурс не содержит валидный RSS',
+      networkError: 'Ошибка загрузки данных: проверьте сетевое подключение',
     },
 
     main: {
@@ -15,7 +16,8 @@ export default {
         btn: 'Добавить',
       },
       linkExample: 'Пример: https://lorem-rss.hexlet.app/feed',
-      successfulFeedback: 'RSS успешно загружен',
+      sendingFeedback: 'Данные загружаются...',
+      loadedFeedback: 'RSS успешно загружен',
     },
 
     posts: {

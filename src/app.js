@@ -1,8 +1,40 @@
 // import onChange from 'on-change';
 import * as yup from 'yup';
 import i18next from 'i18next';
+import axios from 'axios';
 import watch from './view.js';
 import resources from './locales/index.js';
+import getRssData from './rss.js';
+
+const getUniqueId = (prefix = '') => {
+  let counter = 0;
+  return () => {
+    counter += 1;
+    return `${prefix}${counter}`;
+  };
+};
+const getFeedUniqueId = getUniqueId('feed-');
+const getPostUniqueId = getUniqueId('post-');
+
+const getProxyUrl = (url) => `https://allorigins.hexlet.app/get?disableCache=true&url=${url}`;
+
+const getErrorValue = (error) => {
+  if (error.isRSSDataError) return 'errors.noRssData';
+  if (error.isAxiosError) return 'errors.networkError';
+  return error.message.key;
+};
+
+const rssDataHandler = (data, watchedState) => {
+  const { feed, posts } = data;
+  feed.id = getFeedUniqueId();
+  watchedState.feeds.push(feed);
+  const postsWithIds = posts.map((post) => ({
+    ...post,
+    id: getPostUniqueId(),
+    feedId: feed.id,
+  }));
+  watchedState.posts.push(...postsWithIds);
+};
 
 export default () => {
   const elements = {
@@ -29,11 +61,10 @@ export default () => {
     rssForm: {
       state: 'filling',
       input: '',
-      errors: null,
+      error: null,
     },
-    feed: {
-      urls: [],
-    },
+    feeds: [],
+    posts: [],
   };
 
   const defaultLng = 'ru';
@@ -59,22 +90,34 @@ export default () => {
       notOneOf: () => ({ key: 'errors.alreadyExists' }),
     },
   });
-  const schema = yup.string().url();
+
+  // prettier-ignore
+  const schema = (url, loadedUrls) => yup
+    .string().url().notOneOf(loadedUrls).validate(url, { abortEarly: false });
 
   const watchedState = watch(elements, state, i18n);
 
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const input = formData.get('url');
-    schema
-      .validate(input, { abortEarly: false })
+    const inputURL = formData.get('url');
+    schema(
+      inputURL,
+      state.feeds.map(({ url }) => url),
+    )
       .then(() => {
-        watchedState.rssForm.errors = [];
+        watchedState.rssForm.error = null;
+        watchedState.rssForm.state = 'sending';
+        return axios.get(getProxyUrl(inputURL));
+      })
+      .then((response) => {
+        const rssData = getRssData(response.data.contents, inputURL);
+        rssDataHandler(rssData, watchedState);
+        watchedState.rssForm.state = 'loaded';
       })
       .catch((err) => {
-        const messages = err.errors.map((error) => i18n.t(error.key));
-        watchedState.rssForm.errors = messages;
+        watchedState.rssForm.state = 'invalid';
+        watchedState.rssForm.error = getErrorValue(err);
       });
   });
 
