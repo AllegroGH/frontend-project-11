@@ -14,6 +14,7 @@ const formStateHandler = (state, { rssForm, urlInput, submit, feedback }, i18n) 
       feedback.classList.remove('text-warning');
       feedback.classList.add('text-danger');
       break;
+
     case 'sending':
       submit.disabled = true;
       urlInput.classList.remove('is-invalid');
@@ -22,6 +23,7 @@ const formStateHandler = (state, { rssForm, urlInput, submit, feedback }, i18n) 
       feedback.classList.add('text-warning');
       feedback.textContent = i18n.t('main.sendingFeedback');
       break;
+
     case 'loaded': {
       submit.disabled = false;
       urlInput.classList.remove('is-invalid');
@@ -33,6 +35,7 @@ const formStateHandler = (state, { rssForm, urlInput, submit, feedback }, i18n) 
       urlInput.focus();
       break;
     }
+
     default:
       break;
   }
@@ -42,14 +45,17 @@ const createFeedNodes = (stateFeeds) => {
   const feedNodes = stateFeeds.map((feed) => {
     const node = document.createElement('li');
     node.classList.add('list-group-item', 'border-0', 'border-end-0');
+
     const nodeTitle = document.createElement('h3');
     nodeTitle.classList.add('h6', 'm-0');
     nodeTitle.textContent = feed.title;
     node.append(nodeTitle);
+
     const nodeDescription = document.createElement('p');
     nodeDescription.classList.add('m-0', 'small', 'text-black-50');
     nodeDescription.textContent = feed.description;
     node.append(nodeDescription);
+
     return node;
   });
   return feedNodes;

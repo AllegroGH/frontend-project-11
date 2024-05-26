@@ -36,6 +36,28 @@ const rssDataHandler = (data, watchedState) => {
   watchedState.posts.push(...postsWithIds);
 };
 
+const postsRefresh = (watchedState) => {
+  // prettier-ignore
+  const updates = watchedState.feeds.map((feed) => axios.get(getProxyUrl(feed.url))
+    .then((response) => {
+      const { posts } = getRssData(response.data.contents);
+      const currentFeedPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
+      const currentFeedPostsLinks = currentFeedPosts.map((post) => post.link);
+      const newPosts = posts.filter((post) => !currentFeedPostsLinks.includes(post.link));
+
+      const newPostsWithIds = newPosts.map((post) => ({
+        ...post,
+        id: getPostUniqueId(),
+        feedId: feed.id,
+      }));
+      watchedState.posts.unshift(...newPostsWithIds);
+    })
+    .catch((error) => {
+      console.error(`Axios error from ${feed.id}:`, error);
+    }));
+  return Promise.all(updates).finally(() => setTimeout(postsRefresh, 5000, watchedState));
+};
+
 export default () => {
   const elements = {
     rssForm: document.querySelector('.rss-form'),
@@ -130,4 +152,6 @@ export default () => {
   elements.urlInput.addEventListener('input', (e) => {
     e.target.setCustomValidity('');
   });
+
+  postsRefresh(watchedState);
 };
