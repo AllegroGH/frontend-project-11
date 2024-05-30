@@ -59,6 +59,7 @@ const postsRefresh = (watchedState) => {
 };
 
 export default () => {
+  // define DOM elements
   const elements = {
     rssForm: document.querySelector('.rss-form'),
     urlInput: document.querySelector('#url-input'),
@@ -77,9 +78,17 @@ export default () => {
         linkExample: document.querySelector('p[class="mt-2 mb-0 text-muted"]'),
       },
     },
+    modal: {
+      div: document.querySelector('.modal'),
+      header: document.querySelector('.modal-header'),
+      body: document.querySelector('.modal-body'),
+      href: document.querySelector('.full-article'),
+    },
   };
 
+  // define state
   const state = {
+    defaultLng: 'ru',
     rssForm: {
       state: 'filling',
       input: '',
@@ -87,23 +96,27 @@ export default () => {
     },
     feeds: [],
     posts: [],
+    ui: {
+      readedPosts: new Set(),
+      currentPost: null,
+    },
   };
 
-  const defaultLng = 'ru';
   const i18n = i18next.createInstance();
   i18n.init({
-    lng: defaultLng,
+    lng: state.defaultLng,
     debug: false,
     resources,
   });
 
-  // LOAD LOCALE
+  // initial localization
   elements.textNodes.main.header.textContent = i18n.t('main.header');
   elements.textNodes.main.subheader.textContent = i18n.t('main.subheader');
   elements.textNodes.main.form.inputLabel.textContent = i18n.t('main.form.inputLabel');
   elements.textNodes.main.form.btn.textContent = i18n.t('main.form.btn');
   elements.textNodes.main.linkExample.textContent = i18n.t('main.linkExample');
 
+  // setLocale yup rules
   yup.setLocale({
     string: {
       url: () => ({ key: 'errors.invalid' }),
@@ -113,12 +126,15 @@ export default () => {
     },
   });
 
+  // define yup chema
   // prettier-ignore
   const schema = (url, loadedUrls) => yup
     .string().url().notOneOf(loadedUrls).validate(url, { abortEarly: false });
 
+  // define watchedState
   const watchedState = watch(elements, state, i18n);
 
+  // submit event
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -143,15 +159,27 @@ export default () => {
       });
   });
 
+  // applies to empty input
   elements.urlInput.addEventListener('invalid', (e) => {
     if (e.target.value.length === 0) {
       e.target.setCustomValidity(i18n.t('errors.required'));
     }
   });
 
+  // applies to empty input
   elements.urlInput.addEventListener('input', (e) => {
     e.target.setCustomValidity('');
   });
 
+  // post click event
+  elements.posts.addEventListener('click', (e) => {
+    const postId = e.target.dataset.id;
+    if (postId) {
+      watchedState.ui.currentPost = postId;
+      watchedState.ui.readedPosts.add(postId);
+    }
+  });
+
+  // auto refresh posts
   postsRefresh(watchedState);
 };

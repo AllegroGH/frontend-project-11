@@ -61,7 +61,6 @@ const createFeedNodes = (stateFeeds) => {
   return feedNodes;
 };
 
-// refactoring + renderPosts
 const renderFeeds = (stateFeeds, { feeds }, i18n) => {
   feeds.innerHTML = '';
   const card = document.createElement('div');
@@ -85,7 +84,7 @@ const renderFeeds = (stateFeeds, { feeds }, i18n) => {
   feeds.append(card);
 };
 
-const createPostNodes = (statePosts, i18n) => {
+const createPostNodes = (statePosts, readedPosts, i18n) => {
   const postNodes = statePosts.map((post) => {
     const node = document.createElement('li');
     node.classList.add(
@@ -101,11 +100,18 @@ const createPostNodes = (statePosts, i18n) => {
     nodeHref.setAttribute('href', post.link);
     nodeHref.setAttribute('data-id', post.id);
     nodeHref.setAttribute('target', '_blank');
-    nodeHref.setAttribute('target', '_blank');
+    nodeHref.setAttribute('rel', 'noopener noreferrer');
+    if (readedPosts.has(post.id)) nodeHref.classList.add('fw-normal');
+    else nodeHref.classList.add('fw-bold');
+
     nodeHref.textContent = post.title;
 
     const nodeBtn = document.createElement('button');
     nodeBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    nodeBtn.setAttribute('type', 'button');
+    nodeBtn.setAttribute('data-id', post.id);
+    nodeBtn.setAttribute('data-bs-toggle', 'modal');
+    nodeBtn.setAttribute('data-bs-target', '#modal');
     nodeBtn.textContent = i18n.t('posts.previewBtn');
 
     node.append(nodeHref, nodeBtn);
@@ -114,8 +120,10 @@ const createPostNodes = (statePosts, i18n) => {
   return postNodes;
 };
 
-// refactoring + renderFeeds
-const renderPosts = (statePosts, { posts }, i18n) => {
+const renderPosts = (state, { posts }, i18n) => {
+  const statePosts = state.posts;
+  const { readedPosts } = state.ui;
+
   posts.innerHTML = '';
   const card = document.createElement('div');
   card.classList.add('card', 'border-0');
@@ -132,14 +140,23 @@ const renderPosts = (statePosts, { posts }, i18n) => {
 
   const list = document.createElement('ul');
   list.classList.add('list-group', 'border-0', 'rounded-0');
-  list.append(...createPostNodes(statePosts, i18n));
+  list.append(...createPostNodes(statePosts, readedPosts, i18n));
 
   card.append(list);
   posts.append(card);
 };
 
+const renderModalElements = (state, elements, currenPostId) => {
+  const { header, body, href } = elements.modal;
+  const post = state.posts.find((p) => p.id === currenPostId);
+  const { link, title, description } = post;
+
+  header.textContent = title;
+  body.textContent = description;
+  href.setAttribute('href', link);
+};
+
 export default (elements, state, i18n) => {
-  //  const { rssForm, urlInput, submit, feedback, feeds, posts } = elements;
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'rssForm.error':
@@ -155,7 +172,12 @@ export default (elements, state, i18n) => {
         break;
 
       case 'posts':
-        renderPosts(value, elements, i18n);
+      case 'ui.readedPosts':
+        renderPosts(state, elements, i18n);
+        break;
+
+      case 'ui.currentPost':
+        renderModalElements(state, elements, value);
         break;
 
       default:
