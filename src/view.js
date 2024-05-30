@@ -84,6 +84,17 @@ const renderFeeds = (stateFeeds, { feeds }, i18n) => {
   feeds.append(card);
 };
 
+const createPostBtn = (postId, i18n) => {
+  const btn = document.createElement('button');
+  btn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+  btn.setAttribute('type', 'button');
+  btn.setAttribute('data-id', postId);
+  btn.setAttribute('data-bs-toggle', 'modal');
+  btn.setAttribute('data-bs-target', '#modal');
+  btn.textContent = i18n.t('posts.previewBtn');
+  return btn;
+};
+
 const createPostNodes = (statePosts, readedPosts, i18n) => {
   const postNodes = statePosts.map((post) => {
     const node = document.createElement('li');
@@ -101,18 +112,11 @@ const createPostNodes = (statePosts, readedPosts, i18n) => {
     nodeHref.setAttribute('data-id', post.id);
     nodeHref.setAttribute('target', '_blank');
     nodeHref.setAttribute('rel', 'noopener noreferrer');
+    nodeHref.textContent = post.title;
     if (readedPosts.has(post.id)) nodeHref.classList.add('fw-normal');
     else nodeHref.classList.add('fw-bold');
 
-    nodeHref.textContent = post.title;
-
-    const nodeBtn = document.createElement('button');
-    nodeBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-    nodeBtn.setAttribute('type', 'button');
-    nodeBtn.setAttribute('data-id', post.id);
-    nodeBtn.setAttribute('data-bs-toggle', 'modal');
-    nodeBtn.setAttribute('data-bs-target', '#modal');
-    nodeBtn.textContent = i18n.t('posts.previewBtn');
+    const nodeBtn = createPostBtn(post.id, i18n);
 
     node.append(nodeHref, nodeBtn);
     return node;
