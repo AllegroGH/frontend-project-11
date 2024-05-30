@@ -5,7 +5,7 @@ export default {
       invalid: 'Must be valid URL',
       alreadyExists: 'RSS already exists',
       noRssData: 'No valid RSS in the resource',
-      networkError: 'Loading error: check your network connection',
+      networkError: 'Network error',
     },
 
     main: {

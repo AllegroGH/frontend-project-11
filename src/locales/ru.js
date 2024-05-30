@@ -5,7 +5,7 @@ export default {
       invalid: 'Ссылка должна быть валидным URL',
       alreadyExists: 'RSS уже существует',
       noRssData: 'Ресурс не содержит валидный RSS',
-      networkError: 'Ошибка загрузки данных: проверьте сетевое подключение',
+      networkError: 'Ошибка сети',
     },
 
     main: {
